@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# -*- bash -*-
+#
+#
+set -u -e -o pipefail
+
+action="$1"
+shift
+
+
+case "$action" in
+
+
+  "help")
+    echo " bin/bin help"
+    ;;
+
+  *)
+
+    file="$( echo node_modules/*/bin/$action )"
+
+    if [[ -f "$file"  ]]; then
+      $file "$@"
+      exit 0
+    fi
+
+    echo "Unknown action: $action" 1>&2
+    exit 1
+    ;;
+
+esac # === case $action
+
+
+
+

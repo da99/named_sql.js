@@ -1,0 +1,27 @@
+{
+  "name": "named_sql",
+  "version": "0.0.1",
+  "description": "SQL w/ named parameters.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/da99/named_sql.js.git"
+  },
+  "author": "da99",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/da99/named_sql.js/issues"
+  },
+  "homepage": "https://github.com/da99/named_sql.js#readme",
+  "dependencies": {
+    "lodash": "^3.10.1",
+    "pg-escape": "^0.1.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.2.5",
+    "multiline": "^1.0.2"
+  }
+}
