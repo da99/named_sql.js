@@ -17,11 +17,11 @@
   },
   "homepage": "https://github.com/da99/named_sql.js#readme",
   "dependencies": {
-    "lodash": "^3.10.1",
-    "pg-escape": "^0.1.0"
+    "lodash": ">=3.10.1",
+    "pg-escape": ">=0.1.0"
   },
   "devDependencies": {
-    "mocha": "^2.2.5",
-    "multiline": "^1.0.2"
+    "mocha": ">=2.2.5",
+    "multiline": ">=1.0.2"
   }
 }
