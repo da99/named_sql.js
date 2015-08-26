@@ -14,50 +14,74 @@ var escape = require('pg-escape');
 var named_sql = function () {
 
   var args = _.toArray(arguments);
-  var sql, doc, idents;
+  var sql, doc, idents, where;
+  var objs = [];
 
   _.each(args, function (v) {
     if (_.isString(v))
       sql = v;
     if (_.isPlainObject(v)) {
+      objs.push(v);
       if (!doc)
         doc = v;
-      else
+      else if (!idents)
         idents = v;
+      else if (!where)
+        where = v;
     }
   });
 
   var arr = [];
   var counter = 0;
-  var field_names;
+  var cols;
 
-  var sane_sql = sql.replace(/:([A-Z0-9\-\_]+\!?)/ig, function (match, key) {
+  var sane_sql = sql.replace(/:([A-Z0-9\-\_\=]+\!?)/ig, function (match, key) {
     var fin = match;
 
-    if (key === 'FIELD_NAMES!') {
-      field_names = field_names ||  _.keys(doc);
+    switch (key) {
+      case 'COLS!':
+        cols = cols || _.keys(doc);
+        fin = _.map(cols, function (k) { return escape('%I', k); }).join(', ');
+        break;
 
-      fin = _.map(field_names, function (k) { return escape('%I', k); }).join(', ');
+      case 'VALS!':
+        cols = cols || _.keys(doc);
+        fin =  _.map(cols, function (k) {
+          ++counter;
+          arr.push(doc[k]);
+          return '$'+counter;
+        }).join(', ');
+        break;
 
-    } else if (key === 'FIELDS!') {
-      field_names = field_names ||  _.keys(doc);
+      case 'COL=VAL!':
+        fin = _.map(doc, function (v, k) {
+          ++counter;
+          arr.push(doc[k]);
+          return escape('%I', k) + ' = ' + '$' + counter;
+        }).join(', ');
+        break;
 
-      fin =  _.map(field_names, function (k) {
-        ++counter;
-        arr.push(doc[k]);
-        return '$'+counter;
-      }).join(', ');
+      case 'WHERE=VAL!':
+        fin = _.map(where, function (v, k) {
+          ++counter;
+          arr.push(doc[k]);
+          return escape('%I', k) + ' = ' + '$' + counter;
+        }).join(', ');
+        break;
 
-    } else if (_.has(idents, key)) {
-      fin = escape('%I', idents[key]);
+      default:
+        if (_.has(idents, key)) {
+          fin = escape('%I', idents[key]);
 
-    } else if (_.has(doc, key)) {
+        } else if (_.has(doc, key)) {
 
-      ++counter;
-      arr.push(doc[key]);
-      fin = '$'+counter;
+          ++counter;
+          arr.push(doc[key]);
+          fin = '$'+counter;
 
-    }
+        }
+
+    } // === switch key
 
     return fin;
   });

@@ -55,13 +55,13 @@ describe('named_sql:', function () {
     );
   }); // === it returns :names with proper order
 
-  it('replaces :FIELD_NAMES!', function () {
+  it('replaces :COLS!', function () {
     var result = SQL(
       {first: 1, second: 2, third: 3},
       {table: 'my_table'},
       multiline.stripIndent(function () {/*
-        INSERT INTO :table ( :FIELD_NAMES! )
-        VALUES ( :FIELDS! );
+        INSERT INTO :table ( :COLS! )
+        VALUES ( :VALS! );
       */})
     ).sql;
 
@@ -71,15 +71,15 @@ describe('named_sql:', function () {
     */});
 
     assert.equal(result, target);
-  }); // === it replaces FIELD_NAMES
+  }); // === it replaces COLS
 
-  it('replaces :FIELDS!', function () {
+  it('replaces :VALS!', function () {
     var result = SQL(
       {first: 1, second: 2, third: 3},
       {table: 'my_table'},
       multiline.stripIndent(function () {/*
-        INSERT INTO :table ( :FIELD_NAMES! )
-        VALUES ( :FIELDS! );
+        INSERT INTO :table ( :COLS! )
+        VALUES ( :VALS! );
       */})
     ).sql;
 
@@ -89,7 +89,46 @@ describe('named_sql:', function () {
     */});
 
     assert.equal(result, target);
-  }); // === it replaces FIELD_NAMES
+  }); // === it replaces :VALS
+
+  it('replaces :COL=VAL!', function () {
+    var result = SQL(
+      {first: 1, second: 2, third: 3},
+      {table: 'my_table'},
+      multiline.stripIndent(function () {/*
+        UPDATE :table
+        SET :COL=VAL!
+      */})
+    ).sql;
+
+    var target = multiline.stripIndent(function () {/*
+      UPDATE my_table
+      SET first = $1, second = $2, third = $3
+    */});
+
+    assert.equal(result, target);
+  }); // === it replaces :COL=VAL!
+
+  it('replaces :WHERE=VAL!', function () {
+    var result = SQL(
+      {first: 1, second: 2, third: 3},
+      {table: 'my_table'},
+      {city: 'sf', state: 'CA'},
+      multiline.stripIndent(function () {/*
+        UPDATE :table
+        SET :COL=VAL!
+        WHERE :WHERE=VAL!
+      */})
+    ).sql;
+
+    var target = multiline.stripIndent(function () {/*
+      UPDATE my_table
+      SET first = $1, second = $2, third = $3
+      WHERE city = $4, state = $5
+    */});
+
+    assert.equal(result, target);
+  }); // === it replaces :WHERE=VAL!
 
 }); // === describe named_sql =================
 
