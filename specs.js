@@ -14,10 +14,10 @@ describe('named_sql:', function () {
     assert.equal(true, _.isString(result.sql));
   }); // === it returns object with key :sql
 
-  it('returns object with array key :names', function () {
+  it('returns object with array key :vals', function () {
     var result = SQL("SELECT * FROM table WHERE name = :NAME", {NAME: 'bobby'});
-    assert.equal(true, _.isArray(result.names));
-  }); // === it returns object with key :names
+    assert.equal(true, _.isArray(result.vals));
+  }); // === it returns object with key :vals
 
   it('returns :sql with number parameters: $1, $2, etc.', function () {
     var result = SQL(
@@ -38,7 +38,7 @@ describe('named_sql:', function () {
     );
   }); // === it returns :sql with number parameters: $1, $2, etc.
 
-  it('returns :names with proper order', function () {
+  it('returns :vals with proper order', function () {
     var result = SQL(
       {FIRST: 'bobby', LAST: 'miller', MID: 'middle'},
       multiline(function () { /*
@@ -51,9 +51,9 @@ describe('named_sql:', function () {
     );
     assert.deepEqual(
       ['bobby', 'miller', 'middle'],
-      result.names
+      result.vals
     );
-  }); // === it returns :names with proper order
+  }); // === it returns :vals with proper order
 
   it('replaces :COLS!', function () {
     var result = SQL(
@@ -91,6 +91,19 @@ describe('named_sql:', function () {
     assert.equal(result, target);
   }); // === it replaces :VALS
 
+  it('returns vals in proper order for :VALS!', function () {
+    var result = SQL(
+      {first: 1, second: 2, third: 3},
+      {table: 'my_table'},
+      multiline.stripIndent(function () {/*
+        INSERT INTO :table ( :COLS! )
+        VALUES ( :VALS! );
+      */})
+    ).vals;
+
+    assert.deepEqual(result, [1,2,3]);
+  }); // === it returns vals in proper order for :VALS!
+
   it('replaces :COL=VAL!', function () {
     var result = SQL(
       {first: 1, second: 2, third: 3},
@@ -108,6 +121,19 @@ describe('named_sql:', function () {
 
     assert.equal(result, target);
   }); // === it replaces :COL=VAL!
+
+  it('returns vals in proper order for :COL=VAL!', function () {
+    var result = SQL(
+      {second: 2, first: 1, third: 3},
+      {table: 'my_table'},
+      multiline.stripIndent(function () {/*
+        UPDATE :table
+        SET :COL=VAL!
+      */})
+    ).vals;
+
+    assert.deepEqual(result, [2,1,3]);
+  }); // === it returns vals in proper order for :COL=VAL!
 
   it('replaces :WHERE=VAL!', function () {
     var result = SQL(
@@ -129,6 +155,21 @@ describe('named_sql:', function () {
 
     assert.equal(result, target);
   }); // === it replaces :WHERE=VAL!
+
+  it('returns vals in proper order when :COL=VAL! and :WHERE=VAL! are used', function () {
+    var result = SQL(
+      {first: 1, second: 2, third: 3},
+      {table: 'my_table'},
+      {city: 'sf', state: 'CA'},
+      multiline.stripIndent(function () {/*
+        UPDATE :table
+        SET :COL=VAL!
+        WHERE :WHERE=VAL!
+      */})
+    ).vals;
+
+    assert.deepEqual(result, [1,2,3,'sf', 'CA']);
+  }); // === it returns vals in proper order when :COL=VAL! and :WHERE=VAL! are used
 
 }); // === describe named_sql =================
 

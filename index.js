@@ -64,7 +64,7 @@ var named_sql = function () {
       case 'WHERE=VAL!':
         fin = _.map(where, function (v, k) {
           ++counter;
-          arr.push(doc[k]);
+          arr.push(where[k]);
           return escape('%I', k) + ' = ' + '$' + counter;
         }).join(', ');
         break;
@@ -86,7 +86,7 @@ var named_sql = function () {
     return fin;
   });
 
-  return {sql: sane_sql, names: arr};
+  return {sql: sane_sql, vals: arr};
 }; // === func
 
 module.exports = named_sql;
