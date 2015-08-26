@@ -1,6 +1,6 @@
 {
   "name": "named_sql",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "dependencies": {
     "lodash": {
       "version": "3.10.1",
