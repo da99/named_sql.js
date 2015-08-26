@@ -55,4 +55,41 @@ describe('named_sql:', function () {
     );
   }); // === it returns :names with proper order
 
+  it('replaces :FIELD_NAMES!', function () {
+    var result = SQL(
+      {first: 1, second: 2, third: 3},
+      {table: 'my_table'},
+      multiline.stripIndent(function () {/*
+        INSERT INTO :table ( :FIELD_NAMES! )
+        VALUES ( :FIELDS! );
+      */})
+    ).sql;
+
+    var target = multiline.stripIndent(function () {/*
+      INSERT INTO my_table ( first, second, third )
+      VALUES ( $1, $2, $3 );
+    */});
+
+    assert.equal(result, target);
+  }); // === it replaces FIELD_NAMES
+
+  it('replaces :FIELDS!', function () {
+    var result = SQL(
+      {first: 1, second: 2, third: 3},
+      {table: 'my_table'},
+      multiline.stripIndent(function () {/*
+        INSERT INTO :table ( :FIELD_NAMES! )
+        VALUES ( :FIELDS! );
+      */})
+    ).sql;
+
+    var target = multiline.stripIndent(function () {/*
+      INSERT INTO my_table ( first, second, third )
+      VALUES ( $1, $2, $3 );
+    */});
+
+    assert.equal(result, target);
+  }); // === it replaces FIELD_NAMES
+
 }); // === describe named_sql =================
+
