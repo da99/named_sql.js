@@ -1,6 +1,6 @@
 {
   "name": "named_sql",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "SQL w/ named parameters.",
   "main": "index.js",
   "scripts": {
