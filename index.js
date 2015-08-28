@@ -3,87 +3,82 @@
 /* global module, require */
 
 /* global process */
-var log;
-log = function () {
-  return (process.env.IS_DEV) ? console.log.apply(console, arguments) : null;
+var log; log = function (...args) { return (process.env.IS_DEV) ? console.log.apply(console, args) : null;
 };
 
 var _ = require('lodash');
 var escape = require('pg-escape');
 
-var named_sql = function () {
+function to_identifer(k) { return escape('%I', k); }
 
-  var args = _.toArray(arguments);
-  var sql, doc, idents, where;
-  var objs = [];
+var named_sql = function (...args) {
 
-  _.each(args, function (v) {
-    if (_.isString(v))
-      sql = v;
-    if (_.isPlainObject(v)) {
-      objs.push(v);
-      if (!doc)
-        doc = v;
-      else if (!idents)
-        idents = v;
-      else if (!where)
-        where = v;
-    }
-  });
+  var str, origin_doc;
+
+  for (let val of args) {
+    if (_.isString(val))
+      str = val;
+    if (_.isPlainObject(val))
+      origin_doc = val;
+  }
 
   var arr = [];
   var counter = 0;
-  var cols;
 
-  var sane_sql = sql.replace(/:([A-Z0-9\-\_\=]+\!?)/ig, function (match, key) {
-    var fin = match;
+  var sane_sql = str.replace(/:([A-Z0-9\_\=]+\!?)\.?([A-Z0-9\_\=\!?]+)?/ig, function (match, key1, key2) {
+    var doc = origin_doc;
+    var replace = match;
 
-    switch (key) {
+    if (key1 === 'idents' && key2 && _.has(doc, key2))
+      return escape('%I', doc[key2]);
+
+
+    if (_.has(doc, key1) && key2) {
+      if (key1 === 'idents' && doc.idents && doc.idents.hasOwnProperty(key2))
+        return escape('%I', doc.idents[key2]);
+      doc = doc[key1];
+      key1 = key2;
+    }
+
+
+    switch (key1) {
+
       case 'COLS!':
-        cols = cols || _.keys(doc);
-        fin = _.map(cols, function (k) { return escape('%I', k); }).join(', ');
+        replace = _.keys(doc).map(to_identifer).join(', ');
         break;
 
       case 'VALS!':
-        cols = cols || _.keys(doc);
-        fin =  _.map(cols, function (k) {
+        replace = [];
+        for (let v of _.values(doc)) {
           ++counter;
-          arr.push(doc[k]);
-          return '$'+counter;
-        }).join(', ');
+          arr.push(v);
+          replace.push('$'+counter);
+        }
+        replace = replace.join(', ');
         break;
 
       case 'COL=VAL!':
-        fin = _.map(doc, function (v, k) {
-          ++counter;
-          arr.push(doc[k]);
-          return escape('%I', k) + ' = ' + '$' + counter;
-        }).join(', ');
-        break;
-
-      case 'WHERE=VAL!':
-        fin = _.map(where, function (v, k) {
-          ++counter;
-          arr.push(where[k]);
-          return escape('%I', k) + ' = ' + '$' + counter;
-        }).join(', ');
+        replace = [];
+        for (let k in doc) {
+          if (doc.hasOwnProperty(k)) {
+            ++counter;
+            arr.push(doc[k]);
+            replace.push( escape('%I', k) + ' = ' + '$' + counter );
+          }
+        }
+        replace = replace.join(', ');
         break;
 
       default:
-        if (_.has(idents, key)) {
-          fin = escape('%I', idents[key]);
-
-        } else if (_.has(doc, key)) {
-
+        if (doc.hasOwnProperty(key1)) {
           ++counter;
-          arr.push(doc[key]);
-          fin = '$'+counter;
-
+          arr.push(doc[key1]);
+          replace = '$' + counter;
         }
 
     } // === switch key
 
-    return fin;
+    return replace;
   });
 
   return {sql: sane_sql, vals: arr};

@@ -61,9 +61,8 @@ describe('named_sql:', function () {
   it('replaces :COLS!', function () {
     var result = SQL(
       {first: 1, second: 2, third: 3},
-      {table: 'my_table'},
       `
-        INSERT INTO :table ( :COLS! )
+        INSERT INTO my_table ( :COLS! )
         VALUES ( :VALS! );
       `
     ).sql;
@@ -79,9 +78,8 @@ describe('named_sql:', function () {
   it('replaces :VALS!', function () {
     var result = SQL(
       {first: 1, second: 2, third: 3},
-      {table: 'my_table'},
       `
-        INSERT INTO :table ( :COLS! )
+        INSERT INTO my_table ( :COLS! )
         VALUES ( :VALS! );
       `
     ).sql;
@@ -97,9 +95,8 @@ describe('named_sql:', function () {
   it('returns vals in proper order for :VALS!', function () {
     var result = SQL(
       {first: 1, second: 2, third: 3},
-      {table: 'my_table'},
       `
-        INSERT INTO :table ( :COLS! )
+        INSERT INTO my_table ( :COLS! )
         VALUES ( :VALS! );
       `
     ).vals;
@@ -110,9 +107,8 @@ describe('named_sql:', function () {
   it('replaces :COL=VAL!', function () {
     var result = SQL(
       {first: 1, second: 2, third: 3},
-      {table: 'my_table'},
       `
-        UPDATE :table
+        UPDATE my_table
         SET :COL=VAL!
       `
     ).sql;
@@ -128,9 +124,8 @@ describe('named_sql:', function () {
   it('returns vals in proper order for :COL=VAL!', function () {
     var result = SQL(
       {second: 2, first: 1, third: 3},
-      {table: 'my_table'},
       `
-        UPDATE :table
+        UPDATE my_table
         SET :COL=VAL!
       `
     ).vals;
@@ -138,15 +133,17 @@ describe('named_sql:', function () {
     assert.deepEqual(result, [2,1,3]);
   }); // === it returns vals in proper order for :COL=VAL!
 
-  it('replaces :WHERE=VAL!', function () {
+  it('replaces :key.COL=VAL!', function () {
     var result = SQL(
-      {first: 1, second: 2, third: 3},
-      {table: 'my_table'},
-      {city: 'sf', state: 'CA'},
+      {
+        main : {first: 1, second: 2, third: 3},
+        idents : {table: 'my_table'},
+        where : {city: 'sf', state: 'CA'},
+      },
       `
-        UPDATE :table
-        SET :COL=VAL!
-        WHERE :WHERE=VAL!
+        UPDATE :idents.table
+        SET :main.COL=VAL!
+        WHERE :where.COL=VAL!
       `
     ).sql;
 
@@ -159,15 +156,17 @@ describe('named_sql:', function () {
     assert.equal(strip(result), strip(target));
   }); // === it replaces :WHERE=VAL!
 
-  it('returns vals in proper order when :COL=VAL! and :WHERE=VAL! are used', function () {
+  it('returns vals in proper order for :key.COL=VAL!', function () {
     var result = SQL(
-      {first: 1, second: 2, third: 3},
-      {table: 'my_table'},
-      {city: 'sf', state: 'CA'},
+      {
+        main : {first: 1, second: 2, third: 3},
+        idents : {table: 'my_table'},
+        where : {city: 'sf', state: 'CA'},
+      },
       `
-        UPDATE :table
-        SET :COL=VAL!
-        WHERE :WHERE=VAL!
+        UPDATE :idents.table
+        SET :main.COL=VAL!
+        WHERE :where.COL=VAL!
       `
     ).vals;
 
