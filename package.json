@@ -21,7 +21,6 @@
     "pg-escape": ">=0.1.0"
   },
   "devDependencies": {
-    "mocha": ">=2.2.5",
-    "multiline": ">=1.0.2"
+    "mocha": ">=2.2.5"
   }
 }
