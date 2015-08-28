@@ -29,10 +29,6 @@ var named_sql = function (...args) {
     var doc = origin_doc;
     var replace = match;
 
-    if (key1 === 'idents' && key2 && _.has(doc, key2))
-      return escape('%I', doc[key2]);
-
-
     if (_.has(doc, key1) && key2) {
       if (key1 === 'idents' && doc.idents && doc.idents.hasOwnProperty(key2))
         return escape('%I', doc.idents[key2]);
